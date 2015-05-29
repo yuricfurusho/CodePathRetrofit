@@ -4,8 +4,7 @@ package yuricfurusho.codepathretrofit;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.view.View;
 
 import retrofit.Callback;
 import retrofit.RequestInterceptor;
@@ -14,7 +13,8 @@ import retrofit.RetrofitError;
 import retrofit.client.Response;
 
 public class MainActivity extends AppCompatActivity {
-    public static final String BASE_URL = "http://livecom.livetouchdev.com.br:8080/carros/";
+    public static final String END_POINT_URL = "http://livecom.livetouchdev.com.br:8080/carros/";
+    CarroServiceInterface carroServiceInterface;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,35 +22,57 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         RestAdapter restAdapter = new RestAdapter.Builder()
-                .setEndpoint(BASE_URL)
+                .setEndpoint(END_POINT_URL)
                 .setRequestInterceptor(new RequestInterceptor() {
                     @Override
                     public void intercept(RequestFacade request) {
                         request.addHeader("Content-Type", "application/json");
-//                        if (isUserLoggedIn()) {
-//                            request.addHeader("Authorization", getToken());
-//                        }
                     }
                 })
                 .build();
 
-        MyApiEndpointInterface apiService =
-                restAdapter.create(MyApiEndpointInterface.class);
+        carroServiceInterface = restAdapter.create(CarroServiceInterface.class);
+
+    }
 
 
-        apiService.getCarros(new Callback<CamadaInicialDeRetornoParaLista>() {
+    public void onClickGetCarro(View view) {
+        final Long carroId = 1L;
+        carroServiceInterface.getCarro(carroId, new Callback<RetornoDeGetCarro>() {
             @Override
-            public void success(CamadaInicialDeRetornoParaLista cIDRPLista, Response response) {
-                // Access user here after response is parsed
-                Log.i("response.getReason()", response.getReason());
-                Log.i("response.getUrl()", response.getUrl());
-                Log.i("response.getBody()", response.getBody().toString());
-                Log.i("response.getHeaders()", response.getHeaders() + "");
-                Log.i("response.getStatus()", response.getStatus() + "");
+            public void success(RetornoDeGetCarro retornoDeGetCarro, Response response) {
+                logResponse(response);
 
+                Log.i("carro que pedi:", "carro: " + carroId);
+                Log.i("carro.id: ", retornoDeGetCarro.carro.id + "");
+                Log.i("carro.nome: ", retornoDeGetCarro.carro.nome + "");
+                Log.i("carro.tipo: ", retornoDeGetCarro.carro.tipo + "");
+                Log.i("carro.desc: ", retornoDeGetCarro.carro.desc + "");
+                Log.i("carro.latitude: ", retornoDeGetCarro.carro.latitude + "");
+                Log.i("carro.longitude: ", retornoDeGetCarro.carro.longitude + "");
+                Log.i("carro.urlFoto: ", retornoDeGetCarro.carro.urlFoto + "");
+                Log.i("carro.urlVideo: ", retornoDeGetCarro.carro.urlVideo + "");
+                Log.i("carro.urlInfo: ", retornoDeGetCarro.carro.urlFoto + "");
+
+            }
+
+            @Override
+            public void failure(RetrofitError retrofitError) {
+                // Log error here since request failed
+                Log.i("ERRO", retrofitError.toString());
+                Log.i("ERRO", "eeeeeeeeeeeeerrro");
+            }
+        });
+    }
+
+    public void onClickGetCarros(View view) {
+        carroServiceInterface.getCarros(new Callback<RetornoDeGetCarros>() {
+            @Override
+            public void success(RetornoDeGetCarros retornoDeGetCarros, Response response) {
+                logResponse(response);
 
                 Log.i("TODOS OS CARROS :", "carrossss: ");
-                for (Carro carro : cIDRPLista.carroes.carro) {
+                for (Carro carro : retornoDeGetCarros.carroes.carro) {
                     Log.i("carro.id: ", carro.id + "");
                     Log.i("carro.nome: ", carro.nome + "");
                     Log.i("carro.tipo: ", carro.tipo + "");
@@ -65,66 +87,54 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
-            public void failure(RetrofitError retrofitError) {
+            public void failure(RetrofitError error) {
                 // Log error here since request failed
-                Log.i("ERRO", retrofitError.toString());
-                Log.i("ERRO", "eeeeeeeeeeeeerrro");
+                Log.i("ERRO", "Deu Erro no getCarros!!");
+                Log.i("ERRO", error.toString());
             }
         });
+    }
 
-        final Long carroId = 1L;
-        apiService.getCarro(carroId, new Callback<CamadaInicialDeRetornoParaUmCarro>() {
+
+    public void onClickPostCarro(View view) {
+        Carro carroASerPostado = new Carro();
+        carroASerPostado.id = 6;
+        carroASerPostado.nome = "Fusca";
+        carroASerPostado.desc = "descricao interessante";
+        carroASerPostado.latitude = "ao norte";
+        carroASerPostado.longitude = "lah pro oeste";
+        carroASerPostado.tipo = 22;
+        carroASerPostado.urlFoto = "google.com";
+        carroASerPostado.urlInfo = "google.com";
+        carroASerPostado.urlVideo = "google.com";
+
+        RetornoDeGetCarro retornoDeGetCarro = new RetornoDeGetCarro();
+        retornoDeGetCarro.carro = carroASerPostado;
+
+        carroServiceInterface.postCarro(retornoDeGetCarro, new Callback<RetornoDePostCarro>() {
             @Override
-            public void success(CamadaInicialDeRetornoParaUmCarro camadaInicialDeRetornoParaUmCarro, Response response) {
-                // Access user here after response is parsed
-                Log.i("response.getReason()", response.getReason());
-                Log.i("response.getUrl()", response.getUrl());
-                Log.i("response.getBody()", response.getBody().toString());
-                Log.i("response.getHeaders()", response.getHeaders() + "");
-                Log.i("response.getStatus()", response.getStatus() + "");
+            public void success(RetornoDePostCarro retornoDePostCarro, Response response) {
+                logResponse(response);
 
-                Log.i("carro que pedi:", "carro: " + carroId);
-                Log.i("carro.id: ", camadaInicialDeRetornoParaUmCarro.carro.id + "");
-                Log.i("carro.nome: ", camadaInicialDeRetornoParaUmCarro.carro.nome + "");
-                Log.i("carro.tipo: ", camadaInicialDeRetornoParaUmCarro.carro.tipo + "");
-                Log.i("carro.desc: ", camadaInicialDeRetornoParaUmCarro.carro.desc + "");
-                Log.i("carro.latitude: ", camadaInicialDeRetornoParaUmCarro.carro.latitude + "");
-                Log.i("carro.longitude: ", camadaInicialDeRetornoParaUmCarro.carro.longitude + "");
-                Log.i("carro.urlFoto: ", camadaInicialDeRetornoParaUmCarro.carro.urlFoto + "");
-                Log.i("carro.urlVideo: ", camadaInicialDeRetornoParaUmCarro.carro.urlVideo + "");
-                Log.i("carro.urlInfo: ", camadaInicialDeRetornoParaUmCarro.carro.urlFoto + "");
-
+                Log.i("response.msg", retornoDePostCarro.response.msg);
+                Log.i("response.status", retornoDePostCarro.response.status);
             }
 
             @Override
-            public void failure(RetrofitError retrofitError) {
-                // Log error here since request failed
-                Log.i("ERRO", retrofitError.toString());
-                Log.i("ERRO", "eeeeeeeeeeeeerrro");
+            public void failure(RetrofitError error) {
+                Log.i("ERRO", "erro no PostCarro");
+                Log.i("ERRO", error.toString());
             }
         });
 
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
+    private void logResponse(Response response) {
+        Log.i("response.getReason()", response.getReason());
+        Log.i("response.getUrl()", response.getUrl());
+        Log.i("response.getBody()", response.getBody().toString());
+        Log.i("response.getHeaders()", response.getHeaders() + "");
+        Log.i("response.getStatus()", response.getStatus() + "");
     }
 }

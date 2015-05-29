@@ -4,10 +4,9 @@ package yuricfurusho.codepathretrofit;
 import java.util.HashMap;
 import java.util.Map;
 
-public class CamadaInicialDeRetornoParaLista {
+public class RetornoDeGetCarro {
 
-    public Carroes carroes;
+    public Carro carro;
     public Map<String, Object> additionalProperties = new HashMap<String, Object>();
-
 
 }
